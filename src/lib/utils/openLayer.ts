@@ -15,6 +15,8 @@ import VectorSource from 'ol/source/Vector';
 import GeoJSON from 'ol/format/GeoJSON';
 import XYZ from 'ol/source/XYZ';
 
+let positionInitiated = false;
+
 const skogenView = new View({
   center: fromLonLat([mapSettings.lon, mapSettings.lat]),  
   zoom: mapSettings.zoom
@@ -83,13 +85,16 @@ const enableGeoLocation = (map: Map, trackFeature: any) => {
   // bind the view's projection
   geolocation.setProjection(skogenView.getProjection());
   // when we get a position update, add the coordinate to the track's
-  // geometry and recenter the view
+  // Only center the view the first time
+
   geolocation.on('change:position', function() {
     var coordinates = geolocation.getPosition();
 
-    skogenView.setCenter(coordinates);
+    if(!positionInitiated) {
+      skogenView.setCenter(coordinates);
+      positionInitiated = true;
+    }
 
-    console.log('TRACKER POS: ', coordinates)
     trackFeature.setGeometry(coordinates ? new Point(coordinates) : null);
   });
 
