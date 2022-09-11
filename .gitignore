@@ -6,5 +6,4 @@ legacy
 cypress/videos/*
 cypress/screenshots/*
 cypress.env.json
-.env**
 pnpm-lock.yaml
