@@ -1,0 +1,10 @@
+/node_modules/
+/dist/
+/.vscode/
+.DS_Store
+legacy
+cypress/videos/*
+cypress/screenshots/*
+cypress.env.json
+.env**
+pnpm-lock.yaml
