@@ -1,51 +1,36 @@
 <script lang="ts">
-	import Map from '$lib/Map.svelte';
+
 </script>
 
 <svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
-
-	<script
-		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&v=weekly"
-		defer
-	></script>
-
-	<link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+	<title>Sålder</title>
+	<meta name="description" content="Sålders skogsskiften" />
 </svelte:head>
 
-<section>
-	<h1>Skogen</h1>
+<section class="info-section">
+	<h2>Såldergårdens skog och dess skiften</h2>
 
-	<Map />
+	<p>
+		Såldergården äger idag ca 120 ha skogsmark, spritt över 3 skiften.
+		De flesta skiften har länge hört till gården men har med åren utökats då intilliggande skiften köpts upp.
+	</p>
+
+	<ul>
+		<li>Åsbäcksvägen 24:8 - 78.9ha</li>
+		<li>Stenänget 24:3 - 12ha</li>
+		<li>Oxbergsbron 24:3 - 30.8ha</li>
+	</ul>
 </section>
 
 <style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
+	.info-section {
+		max-width: var(--container-max-width);
+		display: grid;
 		flex: 1;
+		padding: 10px 20px;
 	}
 
-	h1 {
-		width: 100%;
-	}
-
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
+	h2 {
+		/* font-weight: normal; */
 	}
 </style>

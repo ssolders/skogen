@@ -3,7 +3,7 @@ import type { Area, MapSettings } from './types'
 export const mapSettings: MapSettings = {
   lon: 14.208857818907179,
   lat: 61.14791171397761, 
-  zoom: 14
+  zoom: 12
 }
 
 // Coordinates taken from Lantmäteriet. Manually selected each of the area points.

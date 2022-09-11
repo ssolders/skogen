@@ -1,28 +1,19 @@
 import {Circle as CircleStyle, Text, Fill, Stroke, Style} from 'ol/style';
-import Point from 'ol/geom/Point';
-import MultiPoint from 'ol/geom/MultiPoint';
-import LineString from 'ol/geom/LineString';
-import Geolocation from 'ol/Geolocation';
-import Overlay from 'ol/Overlay';
-import Feature from 'ol/Feature';
+import { LineString, MultiPoint, Point } from 'ol/geom';
+import { Feature, Geolocation, Map, Overlay, View } from 'ol';
 import { transform, fromLonLat } from 'ol/proj';
+import { Tile, Vector } from 'ol/layer';
+import { Vector as VectorSource, XYZ } from 'ol/source';
+import GeoJSON from 'ol/format/GeoJSON';
 import type { Area, AreaFeature } from '../types'
 import { mapSettings, areas } from '../blyberg'
-import { Map, View } from 'ol';
-import TileLayer from 'ol/layer/Tile';
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
-import GeoJSON from 'ol/format/GeoJSON';
-import XYZ from 'ol/source/XYZ';
+import { mapView } from '../../stores/context';
+import { get } from 'svelte/store';
 
 let positionInitiated = false;
+const contextMapView = get(mapView);
 
-const skogenView = new View({
-  center: fromLonLat([mapSettings.lon, mapSettings.lat]),  
-  zoom: mapSettings.zoom
-})
-
-export const getAreaStyles = (feature: any) => {
+const getAreaStyles = (feature: any) => {
   return  [
     new Style({
       stroke: new Stroke({
@@ -60,7 +51,7 @@ export const getAreaStyles = (feature: any) => {
   ];    
 }
 
-export const createAreaFeature = (area: Area): AreaFeature => {
+const createAreaFeature = (area: Area): AreaFeature => {
   const areaPoints = area.points.map(point => point)
   return {
     'type': 'Feature',
@@ -83,7 +74,7 @@ const enableGeoLocation = (map: Map, trackFeature: any) => {
   });
   
   // bind the view's projection
-  geolocation.setProjection(skogenView.getProjection());
+  geolocation.setProjection(contextMapView.getProjection());
   // when we get a position update, add the coordinate to the track's
   // Only center the view the first time
 
@@ -91,7 +82,7 @@ const enableGeoLocation = (map: Map, trackFeature: any) => {
     var coordinates = geolocation.getPosition();
 
     if(!positionInitiated) {
-      skogenView.setCenter(coordinates);
+      contextMapView.setCenter(coordinates);
       positionInitiated = true;
     }
 
@@ -110,17 +101,6 @@ const enableGeoLocation = (map: Map, trackFeature: any) => {
     console.log('MARKER POS: ', geolocation.getPosition())
     marker.setPosition(geolocation.getPosition())
   }
-  
-  // rotate the view to match the device orientation
-  // var deviceOrientation = new ol.DeviceOrientation({
-  //   tracking: true
-  // });
-  // deviceOrientation.on('change:heading', onChangeHeading);
-  // function onChangeHeading(event) {
-  //   var heading = event.target.getHeading();
-  //   view.setRotation(-heading);
-  // }
-
 }
 
 export const createOpenLayerMap = () => {
@@ -160,7 +140,7 @@ export const createOpenLayerMap = () => {
     ],
   });
 
-  const layer = new VectorLayer({
+  const layer = new Vector({
     source: source,
     style: getAreaStyles,
   });
@@ -168,14 +148,14 @@ export const createOpenLayerMap = () => {
   const map = new Map({
     target: 'map',
     layers: [
-      new TileLayer({
+      new Tile({
         source: new XYZ({
           url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
         })
       }),
       layer,
     ],
-    view: skogenView
+    view: contextMapView
   });
 
   enableGeoLocation(map, trackFeature)

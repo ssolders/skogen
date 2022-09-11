@@ -1,3 +1,3 @@
-import * as shared from "../../../src/routes/about/+page.ts";
+import * as shared from "../../../src/routes/karta/+page.ts";
 export { shared };
-export { default as component } from "../../../src/routes/about/+page.svelte";
+export { default as component } from "../../../src/routes/karta/+page.svelte";

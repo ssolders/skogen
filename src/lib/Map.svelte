@@ -19,12 +19,4 @@
     height: 80vh;
   }
 
-
-.marker {
-  width: 24px;
-  height: 24px;
-  font-size: 24px;
-  border: 5px solid red;
-}
-
 </style>
