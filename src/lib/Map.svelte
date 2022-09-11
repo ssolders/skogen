@@ -11,16 +11,20 @@
 
 <div class="full-screen" id="map" />
 
-<div id="info" style="display: none;"></div>
-<label for="track">
-  track position
-  <input id="track" type="checkbox"/>
-</label>
-
+<div id="location" class="marker">HERE</div>
 
 <style>
   .full-screen {
     width: 100vw;
-    height: 100vh;
+    height: 80vh;
   }
+
+
+.marker {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+  border: 5px solid red;
+}
+
 </style>

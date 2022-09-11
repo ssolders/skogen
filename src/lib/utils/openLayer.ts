@@ -1,7 +1,9 @@
 import {Circle as CircleStyle, Text, Fill, Stroke, Style} from 'ol/style';
-import MultiPoint from 'ol/geom/MultiPoint';
 import Point from 'ol/geom/Point';
+import MultiPoint from 'ol/geom/MultiPoint';
+import LineString from 'ol/geom/LineString';
 import Geolocation from 'ol/Geolocation';
+import Overlay from 'ol/Overlay';
 import Feature from 'ol/Feature';
 import { transform, fromLonLat } from 'ol/proj';
 import type { Area, AreaFeature } from '../types'
@@ -70,80 +72,50 @@ export const createAreaFeature = (area: Area): AreaFeature => {
   }
 }
 
-const createGeoLocation = () => {
+const enableGeoLocation = (map: Map, trackFeature: any) => {
   var geolocation = new Geolocation({
-    // enableHighAccuracy must be set to true to have the heading value.
+    tracking: true,
     trackingOptions: {
       enableHighAccuracy: true
-    },
-    projection: skogenView.getProjection()
+    }
+  });
+  
+  // bind the view's projection
+  geolocation.setProjection(skogenView.getProjection());
+  // when we get a position update, add the coordinate to the track's
+  // geometry and recenter the view
+  geolocation.on('change:position', function() {
+    var coordinates = geolocation.getPosition();
+
+    skogenView.setCenter(coordinates);
+
+    console.log('TRACKER POS: ', coordinates)
+    trackFeature.setGeometry(coordinates ? new Point(coordinates) : null);
   });
 
-  function el(id: string) {
-    return document.getElementById(id);
+  // put a marker at our current position
+  const locationElement = document.getElementById('location') as HTMLDivElement;
+  if (locationElement) {
+    var marker = new Overlay({
+      element: locationElement,
+      positioning: 'center-center'
+    });
+    map.addOverlay(marker);
+
+    console.log('MARKER POS: ', geolocation.getPosition())
+    marker.setPosition(geolocation.getPosition())
   }
+  
+  // rotate the view to match the device orientation
+  // var deviceOrientation = new ol.DeviceOrientation({
+  //   tracking: true
+  // });
+  // deviceOrientation.on('change:heading', onChangeHeading);
+  // function onChangeHeading(event) {
+  //   var heading = event.target.getHeading();
+  //   view.setRotation(-heading);
+  // }
 
-  const element = el('track') as HTMLInputElement;
-  if (element) {
-    element.addEventListener('change', function() {
-      geolocation.setTracking(this.checked);
-    });
-
-    // update the HTML page when the position changes.
-      geolocation.on('change', function() {
-        const infoElement = el('positionshowingtouser1') as HTMLDivElement;
-        if (infoElement) {
-          infoElement.innerText = JSON.stringify(geolocation.getPosition());
-            // el('accuracy').innerText = geolocation.getAccuracy() + ' [m]';
-            // el('altitude').innerText = geolocation.getAltitude() + ' [m]';
-            // el('altitudeAccuracy').innerText = geolocation.getAltitudeAccuracy() + ' [m]';
-            // el('heading').innerText = geolocation.getHeading() + ' [rad]';
-            // el('speed').innerText = geolocation.getSpeed() + ' [m/s]';
-        }
-      });
-    }
-
-    // handle geolocation error.
-    geolocation.on('error', function(error) {
-      var info = document.getElementById('info');
-      console.error(info, error);
-      if (info && error) {
-        // info.innerHTML = error.message;
-        // info.style.display = '';
-      }
-    });
-
-    var accuracyFeature = new Feature();
-      geolocation.on('change:accuracyGeometry', function() {
-        // @ts-ignore:
-        accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
-      });
-
-      var positionFeature = new Feature();
-      positionFeature.setStyle(new Style({
-        image: new CircleStyle({
-          radius: 6,
-          fill: new Fill({
-            color: '#3399CC'
-          }),
-          stroke: new Stroke({
-            color: '#fff',
-            width: 2
-          })
-        })
-      }));
-
-      geolocation.on('change:position', function() {
-        var coordinates = geolocation.getPosition();
-        // @ts-ignore:
-        positionFeature.setGeometry(coordinates ?
-          new Point(coordinates) : null);
-      });
-
-    return {
-      positionFeature,
-      accuracyFeature
-    }
 }
 
 export const createOpenLayerMap = () => {
@@ -158,13 +130,28 @@ export const createOpenLayerMap = () => {
     'features': areas.map(createAreaFeature)
   };
 
+  // use a single feature with a linestring geometry to display our track
+  const trackFeature = new Feature({
+    geometry: new LineString([])
+  });
 
-  const { accuracyFeature, positionFeature } = createGeoLocation();
+  trackFeature.setStyle(new Style({
+    image: new CircleStyle({
+      radius: 8,
+      fill: new Fill({
+        color: '#3399CC'
+      }),
+      stroke: new Stroke({
+        color: '#fff',
+        width: 3
+      })
+    })
+  }));
+
   const source = new VectorSource({
     features: [
       ...new GeoJSON().readFeatures(geojsonObject),
-      accuracyFeature,
-      positionFeature
+      trackFeature
     ],
   });
 
@@ -173,7 +160,7 @@ export const createOpenLayerMap = () => {
     style: getAreaStyles,
   });
 
-  new Map({
+  const map = new Map({
     target: 'map',
     layers: [
       new TileLayer({
@@ -185,4 +172,7 @@ export const createOpenLayerMap = () => {
     ],
     view: skogenView
   });
+
+  enableGeoLocation(map, trackFeature)
 }
+
